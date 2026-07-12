@@ -68,6 +68,18 @@ export namespace AITools {
     ) as ToolSet;
   }
 
+  export async function executeByName(
+    project: Project,
+    name: string,
+    args: Record<string, unknown> = {},
+  ): Promise<unknown> {
+    const definition = toolDefinitions.find((d) => d.name === name);
+    if (!definition) {
+      throw new Error(`未知的 AI 工具: ${name}`);
+    }
+    return await definition.fn(project, args);
+  }
+
   addTool("get_all_nodes", "获取舞台上所有节点以及uuid", z.object({}), (project) => serialize(project.stage));
   addTool("delete_node", "根据uuid删除节点", z.object({ uuid: z.string() }), (project, { uuid }) => {
     project.stageManager.delete(project.stageManager.get(uuid)!);

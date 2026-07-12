@@ -18,6 +18,7 @@ import { ExtensionEntity, ExtensionEntityConfig } from "../../stage/stageObject/
 import { Extension } from "../Extension";
 import { ExtensionKeyBindManager } from "../ExtensionKeyBindManager";
 import { extensionObjectRegistry } from "../ExtensionObjectRegistry";
+import { AITools } from "@/core/service/dataManageService/aiEngine/AITools";
 
 export function extensionHostApiFactory(extension: Extension) {
   const extensionName = extension.metadata.extension?.name || "未知扩展";
@@ -262,6 +263,16 @@ export function extensionHostApiFactory(extension: Extension) {
         throw new Error("表单 schema 必须是一个对象类型");
       }
       return FormWindow.open(zodSchema, { ...options, title: `${extensionName}: ${options.title}` });
+    },
+
+    //region AI 工具转发
+    async ai_executeTool(name: string, args: Record<string, unknown> = {}): Promise<string> {
+      const activeTab = store.get(activeTabAtom);
+      if (!(activeTab instanceof Project)) {
+        throw new Error("当前标签页不是一个项目，无法执行 AI 工具");
+      }
+      const result = await AITools.executeByName(activeTab, name, args);
+      return JSON.stringify(result);
     },
   };
 
